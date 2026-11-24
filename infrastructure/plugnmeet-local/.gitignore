@@ -1,0 +1,10 @@
+# Generated local credentials and service state
+.env
+config.yaml
+livekit.yaml
+nats-server.conf
+client/
+log/
+upload/
+recording_files/
+artifacts/

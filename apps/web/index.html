@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111a3b" />
+    <meta name="description" content="Elawini Estate meetings and voting" />
+    <title>Elawini Estate MeetVote</title>
+    <link rel="icon" href="/logo.png" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/config.js"></script>
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <main id="login-view" class="login-layout">
+      <section class="login-brand">
+        <div class="brand-lockup">
+          <img src="/logo.png" alt="Elawini Estate" />
+          <span>MEETVOTE</span>
+        </div>
+        <div class="login-intro">
+          <p class="eyebrow">ELAWINI ESTATE</p>
+          <h1>Meet.<br />Collaborate.<br />Make decisions.</h1>
+          <p>Your secure home for estate meetings, elections, and community decisions.</p>
+        </div>
+        <p class="login-footnote">Private community access</p>
+      </section>
+
+      <section class="login-panel">
+        <div class="login-card">
+          <p class="eyebrow">WELCOME TO MEETVOTE</p>
+          <h2 id="login-heading">Sign in to your account</h2>
+          <p class="muted">Use your Elawini Estate account to continue.</p>
+          <div id="login-notice" class="notice" role="status" hidden></div>
+          <form id="login-form" class="form-stack">
+            <label for="login-email">Email address</label>
+            <input id="login-email" name="email" type="email" autocomplete="username" required />
+            <label for="login-password">Password</label>
+            <input id="login-password" name="password" type="password" autocomplete="current-password" required />
+            <button class="button button-primary button-wide" type="submit">Sign in</button>
+          </form>
+          <form id="setup-form" class="form-stack" hidden>
+            <label for="setup-name">Your name</label>
+            <input id="setup-name" name="displayName" autocomplete="name" required />
+            <label for="setup-email">Email address</label>
+            <input id="setup-email" name="email" type="email" autocomplete="username" required />
+            <label for="setup-password">Create password</label>
+            <input id="setup-password" name="password" type="password" autocomplete="new-password" minlength="12" required />
+            <p class="field-help">Use at least 12 characters. First administrator setup is available only when enabled by your administrator.</p>
+            <button class="button button-primary button-wide" type="submit">Create administrator account</button>
+          </form>
+          <button id="toggle-setup" class="text-button" type="button">First administrator setup (only if none exists)</button>
+        </div>
+        <p class="login-legal">Elawini Estate MeetVote · Secure community services</p>
+      </section>
+    </main>
+
+    <div id="app-view" class="app-layout" hidden>
+      <aside class="sidebar" id="mobile-drawer" aria-label="Estate navigation">
+        <button id="drawer-close" class="drawer-close icon-button" type="button" aria-label="Close navigation">×</button>
+        <a class="brand-lockup sidebar-brand" href="#overview" aria-label="Elawini Estate MeetVote home">
+          <img src="/logo-white.png" alt="Elawini Estate" />
+          <span>MeetVote</span>
+        </a>
+        <p class="nav-caption">YOUR ESTATE</p>
+        <nav class="main-nav" aria-label="Main navigation">
+          <button class="nav-item active" type="button" data-view="overview"><span class="nav-symbol">⌂</span>Home</button>
+          <button class="nav-item" type="button" data-view="meetings"><span class="nav-symbol">▦</span>Meetings</button>
+          <button class="nav-item" type="button" data-view="voting"><span class="nav-symbol">✓</span>Elections</button>
+          <button class="nav-item" type="button" data-view="results"><span class="nav-symbol">▥</span>Results</button>
+        </nav>
+        <p class="nav-caption secondary-caption">MORE</p>
+        <nav class="main-nav" aria-label="Resources">
+          <button class="nav-item" type="button" data-view="documents"><span class="nav-symbol">▤</span>Documents</button>
+          <button class="nav-item" type="button" data-view="reports"><span class="nav-symbol">▧</span>Reports</button>
+          <button class="nav-item" type="button" data-view="profile"><span class="nav-symbol">♙</span>Profile</button>
+          <button class="nav-item" type="button" data-view="settings"><span class="nav-symbol">⚙</span>Settings</button>
+          <button id="accounts-nav-item" class="nav-item" type="button" data-view="accounts" hidden><span class="nav-symbol">♙</span>Accounts</button>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="estate-chip"><span class="status-dot"></span><span>Elawini Estate<br /><small>Resident portal</small></span></div>
+          <button id="logout-button" class="button button-quiet sidebar-logout" type="button"><span aria-hidden="true">↪</span>Sign out</button>
+        </div>
+      </aside>
+      <button id="drawer-overlay" class="drawer-overlay" type="button" aria-label="Close navigation" tabindex="-1"></button>
+
+      <section class="main-column">
+        <header class="topbar">
+          <button id="mobile-menu-button" class="mobile-menu-button" type="button" aria-label="Open navigation" aria-controls="mobile-drawer" aria-expanded="false">
+            <span></span><span></span><span></span>
+          </button>
+          <div class="topbar-title">
+            <p class="eyebrow">ELAWINI ESTATE</p>
+            <div class="breadcrumb"><span>MeetVote</span><span class="crumb-separator">/</span><strong id="current-view-name">Home</strong></div>
+          </div>
+          <div class="profile-menu">
+            <div class="avatar" id="profile-avatar">E</div>
+            <div class="profile-copy"><strong id="profile-name">Resident</strong><small id="profile-role">Estate member</small></div>
+          </div>
+        </header>
+
+        <main class="content">
+          <div id="app-notice" class="notice" role="status" hidden></div>
+          <section class="page-view active" data-page="overview">
+            <div class="welcome-hero">
+              <div class="welcome-copy">
+                <p class="eyebrow">YOUR COMMUNITY, IN ONE PLACE</p>
+                <h1 id="welcome-heading">Welcome</h1>
+                <p>Meet, collaborate, and help shape decisions at Elawini Estate.</p>
+                <div class="hero-actions">
+                  <button id="hero-create-meeting" class="button button-primary" type="button" hidden>Create a meeting</button>
+                  <button class="button button-outline" data-go="meetings" type="button">Explore meetings</button>
+                </div>
+              </div>
+              <div class="hero-art" aria-hidden="true">
+                <img class="hero-logo" src="/logo.png" alt="" />
+              </div>
+            </div>
+            <div class="stat-grid">
+              <article class="stat-card"><span class="stat-icon green-icon">▦</span><div><p>Upcoming meetings</p><strong id="meeting-count">—</strong></div><small>Scheduled in your community</small></article>
+              <article class="stat-card"><span class="stat-icon gold-icon">✓</span><div><p>Open elections</p><strong id="open-vote-count">—</strong></div><small>Decisions currently underway</small></article>
+              <button id="next-meeting-card" class="stat-card next-meeting-card" type="button" disabled aria-label="No upcoming meeting scheduled">
+                <span class="stat-icon blue-icon">◷</span>
+                <span class="next-meeting-info"><span>Next meeting</span><strong id="next-meeting-date">—</strong></span>
+                <small id="next-meeting-title">No meeting scheduled</small>
+                <span class="next-meeting-action" aria-hidden="true">View meeting →</span>
+              </button>
+            </div>
+            <div class="section-heading"><div><p class="eyebrow">UP NEXT</p><h2>Community meetings</h2></div><button class="text-button" data-go="meetings" type="button">See all meetings <span aria-hidden="true">→</span></button></div>
+            <div id="overview-meetings" class="meeting-list"></div>
+            <div class="section-heading election-preview-heading"><div><p class="eyebrow">HAVE YOUR SAY</p><h2>Upcoming elections</h2></div><button class="text-button" data-go="voting" type="button">See all elections <span aria-hidden="true">→</span></button></div>
+            <div id="overview-elections" class="election-list"></div>
+          </section>
+
+          <section class="page-view" data-page="meetings">
+            <div class="page-heading heading-row">
+              <div><p class="eyebrow">ELAWINI ESTATE</p><h1>Meetings</h1><p class="muted">Browse upcoming meetings or expand the past meetings archive.</p></div>
+              <button id="create-meeting-button" class="button button-primary" type="button" hidden>＋ New meeting</button>
+            </div>
+            <div id="meetings-list" class="meeting-sections"></div>
+          </section>
+
+          <section class="page-view" data-page="voting">
+            <div class="page-heading"><p class="eyebrow">HAVE YOUR SAY</p><h1>Elections</h1><p class="muted">Review community elections, cast an eligible ballot, and manage scheduled voting.</p></div>
+            <div id="elections-list" class="election-list"></div>
+          </section>
+
+          <section class="page-view" data-page="results">
+            <div class="page-heading"><p class="eyebrow">TRANSPARENT OUTCOMES</p><h1>Election results</h1><p class="muted">Published results grouped by meeting, with a separate breakdown for every vote.</p></div>
+            <div id="results-list" class="election-list"><article class="empty-card results-empty"><span class="empty-icon">▥</span><h2>No published results yet</h2><p>Completed election results will appear here after voting closes.</p></article></div>
+          </section>
+
+          <section class="page-view" data-page="documents">
+            <div class="page-heading"><p class="eyebrow">COMMUNITY RESOURCES</p><h1>Documents</h1><p class="muted">Important files for Elawini Estate residents.</p></div>
+            <div id="documents-list" class="document-meeting-list"><article class="empty-card"><span class="empty-icon">▤</span><h2>No meeting documents yet</h2><p>Documents shared for estate meetings will appear here.</p></article></div>
+          </section>
+
+          <section class="page-view" data-page="reports">
+            <div class="page-heading"><p class="eyebrow">COMMUNITY RECORDS</p><h1>Reports</h1><p class="muted">Meeting and voting reports for your estate.</p></div>
+            <div id="reports-list" class="report-list"><article class="empty-card"><span class="empty-icon">▥</span><h2>No meeting reports yet</h2><p>Reports will be available for scheduled meetings.</p></article></div>
+          </section>
+
+          <section class="page-view" data-page="profile">
+            <div class="page-heading"><p class="eyebrow">YOUR ACCOUNT</p><h1>Profile</h1><p class="muted">Your Elawini Estate account information.</p></div>
+            <article class="settings-card account-form-card">
+              <div class="settings-card-heading"><div class="avatar large-avatar" id="settings-avatar">E</div><div><h2 id="settings-name">Resident</h2><p class="muted" id="settings-email"></p></div></div>
+              <form id="profile-form" class="form-stack">
+                <div id="profile-notice" class="notice" role="status" hidden></div>
+                <label for="profile-display-name">Display name</label>
+                <input id="profile-display-name" name="displayName" autocomplete="name" maxlength="100" required />
+                <label for="profile-email">Email address</label>
+                <input id="profile-email" type="email" readonly />
+                <p class="field-help">Email address and account type are managed by your estate administrator.</p>
+                <button class="button button-primary account-submit" type="submit">Save profile</button>
+              </form>
+              <dl class="details-list"><div><dt>Account type</dt><dd id="settings-role"></dd></div><div><dt>Organisation</dt><dd>Elawini Estate</dd></div></dl>
+            </article>
+          </section>
+
+          <section class="page-view" data-page="settings">
+            <div class="page-heading"><p class="eyebrow">PREFERENCES</p><h1>Settings</h1><p class="muted">Manage your MeetVote experience.</p></div>
+            <div class="settings-grid">
+              <article class="settings-card"><h2>Account &amp; profile</h2><p class="muted settings-intro">Update your display name and review your estate account information.</p><button class="button button-outline" data-go="profile" type="button">Manage profile</button></article>
+              <article class="settings-card"><h2>Account security</h2><p class="muted settings-intro">Change your password or sign out when using a shared device.</p><div class="settings-actions"><button class="button button-outline" data-go="settings-password" type="button">Change password</button><button class="button button-quiet" data-settings-logout type="button">Sign out of this device</button></div></article>
+            </div>
+          </section>
+
+          <section class="page-view" data-page="settings-password">
+            <div class="page-heading"><p class="eyebrow">ACCOUNT SECURITY</p><h1>Password security</h1><p class="muted">Change the password you use to sign in to MeetVote.</p><button class="text-button" data-go="settings" type="button">← Back to settings</button></div>
+            <article class="settings-card account-form-card">
+              <h2>Change password</h2>
+              <p class="muted settings-intro">Use at least 12 characters. Changing your password signs out other active sessions.</p>
+              <div id="password-notice" class="notice" role="status" hidden></div>
+              <form id="password-form" class="form-stack">
+                <label for="current-password">Current password</label>
+                <input id="current-password" name="currentPassword" type="password" autocomplete="current-password" required />
+                <label for="new-password">New password</label>
+                <input id="new-password" name="newPassword" type="password" autocomplete="new-password" minlength="12" maxlength="256" required />
+                <label for="confirm-password">Confirm new password</label>
+                <input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" minlength="12" maxlength="256" required />
+                <button class="button button-primary account-submit" type="submit">Update password</button>
+              </form>
+            </article>
+          </section>
+
+          <section class="page-view" data-page="accounts">
+            <div class="page-heading"><p class="eyebrow">ADMINISTRATION</p><h1>Accounts</h1><p class="muted">Create access for Elawini Estate residents and meeting organisers.</p></div>
+            <article class="settings-card account-form-card">
+              <h2>Create an account</h2>
+              <p class="muted">The new account holder can sign in with the email and temporary password you provide.</p>
+              <form id="account-form" class="form-stack">
+                <label for="account-name">Full name</label>
+                <input id="account-name" name="displayName" autocomplete="name" required />
+                <label for="account-email">Email address</label>
+                <input id="account-email" name="email" type="email" autocomplete="off" required />
+                <label for="account-role">Account type</label>
+                <select id="account-role" name="role" required>
+                  <option value="registered_participant">Registered resident</option>
+                  <option value="meeting_organiser">Meeting organiser</option>
+                  <option value="system_administrator">System administrator</option>
+                </select>
+                <label for="account-password">Temporary password</label>
+                <input id="account-password" name="password" type="password" autocomplete="new-password" minlength="12" required />
+                <p class="field-help">Use at least 12 characters and share it with the account holder securely.</p>
+                <button class="button button-primary account-submit" type="submit">Create account</button>
+              </form>
+            </article>
+            <section class="hoa-registry" aria-labelledby="hoa-registry-heading">
+              <div class="page-heading"><p class="eyebrow">ESTATE VOTING REGISTER</p><h2 id="hoa-registry-heading">Members and Units/Erfs</h2><p class="muted">Maintain the estate’s manual membership register. Only eligible Units/Erfs in good standing can vote.</p></div>
+              <div id="hoa-registry-notice" class="notice" role="status" hidden></div>
+              <div class="hoa-registry-grid">
+                <article class="settings-card">
+                  <h3 id="hoa-member-form-heading">Add a Member</h3>
+                  <form id="hoa-member-form" class="form-stack">
+                    <input id="hoa-member-id" type="hidden" />
+                    <label for="hoa-member-name">Full name or entity name</label>
+                    <input id="hoa-member-name" required maxlength="160" />
+                    <label for="hoa-member-number">Membership number <span class="muted">(optional)</span></label>
+                    <input id="hoa-member-number" maxlength="100" />
+                    <label for="hoa-member-account">MeetVote account <span class="muted">(optional)</span></label>
+                    <select id="hoa-member-account"><option value="">Not linked</option></select>
+                    <label for="hoa-member-type">Member type</label>
+                    <select id="hoa-member-type" required>
+                      <option value="member">Member</option><option value="special">Special Member</option><option value="developer">Developer</option>
+                    </select>
+                    <label class="checkbox-label"><input id="hoa-member-good-standing" type="checkbox" /> In good standing</label>
+                    <label class="checkbox-label"><input id="hoa-member-entity" type="checkbox" /> Entity Member</label>
+                    <label class="checkbox-label"><input id="hoa-member-active" type="checkbox" checked /> Active Member</label>
+                    <div class="form-actions"><button class="button button-primary" type="submit">Add Member</button><button id="hoa-member-cancel" class="button button-quiet" type="button" hidden>Cancel edit</button></div>
+                  </form>
+                </article>
+                <article class="settings-card">
+                  <h3>Development period</h3>
+                  <p class="muted">When active, the registered Developer receives the additional 50% of its eligible base Unit/Erf votes.</p>
+                  <form id="hoa-voting-config-form" class="form-stack">
+                    <label class="checkbox-label"><input id="hoa-development-period-active" type="checkbox" /> Development period active</label>
+                    <button class="button button-primary" type="submit">Save voting configuration</button>
+                  </form>
+                </article>
+              </div>
+              <article class="settings-card hoa-list-card">
+                <h3>Registered Members</h3>
+                <div id="hoa-members-list" class="hoa-record-list"><p class="muted">Loading membership register…</p></div>
+              </article>
+              <article class="settings-card">
+                <h3 id="hoa-unit-form-heading">Add a Unit/Erf</h3>
+                <p class="muted">Co-owners share one vote for their Unit/Erf. Mark a Unit/Erf eligible only when all owners are in good standing.</p>
+                <form id="hoa-unit-form" class="form-stack">
+                  <input id="hoa-unit-id" type="hidden" />
+                  <label for="hoa-unit-number">Unit/Erf number</label>
+                  <input id="hoa-unit-number" required maxlength="100" />
+                  <label>Owners / co-owners</label>
+                  <div id="hoa-unit-members" class="member-checkbox-list"><p class="muted">Add Members before creating Units/Erfs.</p></div>
+                  <label class="checkbox-label"><input id="hoa-unit-voting-eligible" type="checkbox" /> Eligible to vote</label>
+                  <label class="checkbox-label"><input id="hoa-unit-active" type="checkbox" checked /> Active Unit/Erf</label>
+                  <div class="form-actions"><button class="button button-primary" type="submit">Add Unit/Erf</button><button id="hoa-unit-cancel" class="button button-quiet" type="button" hidden>Cancel edit</button></div>
+                </form>
+              </article>
+              <article class="settings-card hoa-list-card">
+                <h3>Registered Units/Erfs</h3>
+                <div id="hoa-units-list" class="hoa-record-list"><p class="muted">Loading Units/Erfs…</p></div>
+              </article>
+            </section>
+          </section>
+        </main>
+      </section>
+    </div>
+
+    <dialog id="meeting-dialog" class="meeting-dialog">
+      <form id="meeting-form" class="form-stack">
+        <div class="dialog-heading"><div><p class="eyebrow">ELAWINI ESTATE</p><h2>Schedule a meeting</h2></div><button class="icon-button" aria-label="Close" type="button" data-close-meeting>×</button></div>
+        <div id="meeting-notice" class="notice" role="status" hidden></div>
+        <label for="meeting-title">Meeting name</label>
+        <input id="meeting-title" name="title" maxlength="160" placeholder="e.g. Annual residents meeting" required />
+        <label for="meeting-description">Description</label>
+        <textarea id="meeting-description" name="description" rows="3" maxlength="2000" placeholder="Purpose, background, or other details for residents"></textarea>
+        <label for="meeting-type">Meeting type</label>
+        <select id="meeting-type" name="meetingType" required>
+          <option value="general">Community meeting</option>
+          <option value="agm">Annual general meeting (AGM)</option>
+          <option value="committee">Committee meeting</option>
+          <option value="special">Special meeting</option>
+        </select>
+        <label for="meeting-chairperson">Chairperson</label>
+        <select id="meeting-chairperson" name="chairpersonId" required></select>
+        <label for="meeting-start">Date and time</label>
+        <input id="meeting-start" name="startsAt" type="datetime-local" required />
+        <p class="field-help">The meeting is created in Elawini MeetVote and the internal meeting service.</p>
+        <div class="dialog-actions"><button class="button button-quiet" type="button" data-close-meeting>Cancel</button><button class="button button-primary" id="save-meeting-button" type="button">Create meeting</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="election-dialog" class="meeting-dialog election-dialog">
+      <form id="election-form" class="form-stack">
+        <div class="dialog-heading"><div><p class="eyebrow">ELAWINI ESTATE</p><h2 id="election-dialog-title">Create a candidate election</h2></div><button class="icon-button" value="cancel" aria-label="Close" type="button" data-close-election>×</button></div>
+        <div id="election-notice" class="notice" role="status" hidden></div>
+        <input id="election-agenda-item" name="agendaItemId" type="hidden" />
+        <div id="election-details-fields">
+          <section id="election-template-tools" class="election-template-tools">
+            <h3>Reusable election templates</h3>
+            <p class="field-help">Save common vote setups and reuse them for another meeting. Candidate names, profiles, and optional photos are saved with candidate templates.</p>
+            <div class="template-load-row">
+              <label for="election-template-select">Saved templates</label>
+              <select id="election-template-select"><option value="">Choose a template</option></select>
+              <button id="apply-election-template" class="button button-quiet" type="button" disabled>Use template</button>
+            </div>
+            <div class="template-save-row">
+              <label for="election-template-name">Template name</label>
+              <input id="election-template-name" maxlength="100" placeholder="e.g. Annual trustee election" />
+              <button id="save-election-template" class="button button-quiet" type="button">Save as new template</button>
+              <button id="update-election-template" class="button button-quiet" type="button" hidden>Update selected template</button>
+              <button id="delete-election-template" class="button button-quiet" type="button" hidden>Delete selected template</button>
+            </div>
+            <p id="election-template-notice" class="field-help" role="status" hidden></p>
+          </section>
+          <label for="election-meeting">Meeting</label>
+          <select id="election-meeting" name="meetingId" required></select>
+          <label for="election-type">Voting item type</label>
+          <select id="election-type" name="votingType">
+            <option value="candidate">Candidate election</option>
+            <option value="resolution">For / Against / Abstain resolution</option>
+            <option value="multiple_choice">Multiple-choice vote</option>
+          </select>
+          <label for="election-title">Voting item title</label>
+          <input id="election-title" name="title" maxlength="160" placeholder="e.g. Elect the residents committee" required />
+          <label for="election-start">Voting opens</label>
+          <input id="election-start" name="startsAt" type="datetime-local" />
+          <label for="election-end">Voting closes</label>
+          <input id="election-end" name="endsAt" type="datetime-local" />
+          <div id="election-options-field" hidden>
+            <label for="election-options">Choices (one per line)</label>
+            <textarea id="election-options" name="options" rows="4" placeholder="Choice one&#10;Choice two"></textarea>
+          </div>
+          <p id="election-edit-help" class="field-help" hidden>For an existing draft, you can edit its title and schedule. Its ballot choices are fixed; use a template to create the same kind of vote at a future meeting with different choices.</p>
+        </div>
+        <section id="candidate-profiles-field" class="candidate-profiles-field" hidden>
+          <div class="candidate-editor-intro">
+            <h3>Candidate profiles</h3>
+            <p>Every candidate needs a full name, position, short biography, and experience or qualifications. Add a photo when available; otherwise, the default portrait is used. You can preview and reorder profiles before creating the election.</p>
+            <p id="candidate-edit-help" class="field-help" hidden>For an existing draft, candidate names and ballot choices are fixed. Update profile details, photographs, or order only.</p>
+          </div>
+          <div id="candidate-profiles-list" class="candidate-profiles-editor"></div>
+          <button id="add-candidate-button" class="button button-quiet" type="button">＋ Add candidate</button>
+        </div>
+        <p class="field-help">Eligible residents can submit one confidential ballot. While a meeting is live, omitted times default to now and two hours from now.</p>
+        <div class="dialog-actions"><button class="button button-quiet" type="button" data-close-election>Cancel</button><button class="button button-primary" id="save-election-button" type="submit">Create election</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="voter-dialog" class="meeting-dialog agenda-dialog">
+      <form id="voter-form" class="form-stack">
+        <div class="dialog-heading"><div><p class="eyebrow">ELECTION ADMINISTRATION</p><h2 id="voter-dialog-title">Manage eligible voters</h2><p class="muted">Only selected registered residents can receive voting authorisation.</p></div><button class="icon-button" value="cancel" aria-label="Close" type="button" data-close-voters>×</button></div>
+        <div id="voter-notice" class="notice" role="status" hidden></div>
+        <div id="voter-list" class="voter-list"></div>
+        <div class="dialog-actions"><button class="button button-quiet" value="cancel" type="button" data-close-voters>Cancel</button><button class="button button-primary" type="submit">Save eligible voters</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="meeting-agenda-dialog" class="meeting-dialog agenda-dialog">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">MEETING DETAILS</p><h2 id="agenda-meeting-title">Agenda &amp; motions</h2><p id="agenda-meeting-description" class="muted"></p></div>
+        <button class="icon-button" type="button" aria-label="Close" data-close-agenda>×</button>
+      </div>
+      <div id="agenda-notice" class="notice" role="status" hidden></div>
+      <div id="agenda-items-list" class="agenda-list"></div>
+      <section class="agenda-documents">
+        <h3>Meeting documents</h3>
+        <div id="agenda-documents-list" class="meeting-document-list"><p class="muted">Loading documents…</p></div>
+      </section>
+      <section id="agenda-management" class="agenda-management" hidden>
+        <form id="agenda-form" class="form-stack">
+          <h3>Add an agenda item</h3>
+          <label for="agenda-title">Agenda item</label>
+          <input id="agenda-title" name="title" maxlength="160" required />
+          <label for="agenda-description">Description (optional)</label>
+          <textarea id="agenda-description" name="description" rows="2" maxlength="2000"></textarea>
+          <button class="button button-primary" type="submit">Add agenda item</button>
+        </form>
+        <form id="motion-form" class="form-stack">
+          <h3>Add a motion</h3>
+          <label for="motion-agenda-item">Agenda item (optional)</label>
+          <select id="motion-agenda-item" name="agendaItemId"><option value="">Not linked to an agenda item</option></select>
+          <label for="motion-title">Motion title</label>
+          <input id="motion-title" name="title" maxlength="160" required />
+          <label for="motion-text">Motion text</label>
+          <textarea id="motion-text" name="text" rows="3" maxlength="5000" required></textarea>
+          <button class="button button-primary" type="submit">Add motion</button>
+        </form>
+        <form id="agenda-document-form" class="form-stack">
+          <h3>Share a meeting document</h3>
+          <label for="agenda-document-file">PDF document (up to 8 MB)</label>
+          <input id="agenda-document-file" name="document" type="file" accept="application/pdf,.pdf" required />
+          <button class="button button-primary" type="submit">Upload document</button>
+        </form>
+        <section class="proxy-management">
+          <h3>Proxy appointments</h3>
+          <p class="muted">Appointments and required documents must be delivered before the meeting starts. Verify the signed instrument and each owner’s supporting documents.</p>
+          <form id="proxy-appointment-form" class="form-stack">
+            <label for="proxy-unit-select">Eligible Unit/Erf</label>
+            <select id="proxy-unit-select" required><option value="">Loading Units/Erfs…</option></select>
+            <label for="proxy-account-select">Registered proxy</label>
+            <select id="proxy-account-select" required><option value="">Loading accounts…</option></select>
+            <button class="button button-primary" type="submit">Create proxy appointment</button>
+          </form>
+          <div id="proxy-appointments-list" class="proxy-appointments-list"><p class="muted">Loading proxy appointments…</p></div>
+        </section>
+      </section>
+      <div class="dialog-actions"><button class="button button-quiet" type="button" data-close-agenda>Close</button></div>
+    </dialog>
+
+    <dialog id="video-dialog" class="video-dialog" aria-labelledby="video-dialog-title">
+      <div class="video-dialog-heading">
+        <h2 id="video-dialog-title">Elawini Estate meeting</h2>
+        <div class="video-dialog-actions">
+          <button id="rejoin-video-button" class="button button-quiet" type="button" aria-label="Rejoin meeting" title="Use after leaving the room or if the connection drops" hidden>Rejoin</button>
+          <button id="video-controls-toggle" class="button button-quiet" type="button" aria-expanded="false" hidden>Show agenda &amp; voting</button>
+          <button id="close-video-button" class="icon-button" type="button" aria-label="Leave meeting">×</button>
+        </div>
+      </div>
+      <div class="meeting-room-layout">
+        <iframe id="video-frame" title="Elawini Estate meeting room" allow="camera; microphone; display-capture; fullscreen" allowfullscreen referrerpolicy="no-referrer"></iframe>
+        <aside class="meeting-room-panel" hidden>
+          <div class="meeting-room-toolbar">
+            <span id="live-meeting-status" class="status-label">Meeting not started</span>
+            <button id="live-meeting-toggle" class="button button-primary" type="button" hidden>Start meeting</button>
+          </div>
+          <div id="live-meeting-notice" class="notice" role="status" hidden></div>
+          <section id="live-agenda-section" class="live-room-section">
+            <div class="live-section-heading"><h3>Agenda</h3><button id="live-next-agenda" class="text-button" type="button" hidden>Next item →</button></div>
+            <div id="live-agenda-list" class="live-agenda-list"><p class="muted">Loading agenda…</p></div>
+            <form id="live-agenda-form" class="live-agenda-form" hidden>
+              <label class="sr-only" for="live-agenda-title">New agenda item</label>
+              <input id="live-agenda-title" name="title" maxlength="160" placeholder="Add an agenda item" required />
+              <button class="button button-quiet" type="submit">Add</button>
+            </form>
+          </section>
+          <section class="live-room-section">
+            <div class="live-section-heading"><h3>Live vote</h3><button id="live-create-vote" class="text-button" type="button" hidden>＋ New</button></div>
+            <div id="live-ballot-notice" class="notice" role="status" hidden></div>
+            <div id="live-voting-panel"><p class="muted">No voting item announced.</p></div>
+          </section>
+          <section id="live-documents-section" class="live-room-section">
+            <div class="live-section-heading"><h3>Meeting documents</h3></div>
+            <div id="live-documents-list" class="meeting-document-list"><p class="muted">Loading documents…</p></div>
+          </section>
+          <section id="live-attendance-section" class="live-room-section">
+            <div class="live-section-heading"><h3>Participants &amp; attendance</h3></div>
+            <p id="live-attendance-summary" class="muted live-attendance-summary">Attendance information is loading…</p>
+            <button id="live-check-in" class="button button-quiet" type="button" hidden>Check in for this meeting</button>
+            <form id="live-quorum-adjourn-form" class="live-quorum-adjourn" hidden>
+              <label for="live-quorum-resume-at">Resume within 15 business days</label>
+              <input id="live-quorum-resume-at" type="datetime-local" required />
+              <button class="button button-quiet" type="submit">Adjourn for lack of quorum</button>
+            </form>
+            <div id="live-attendance-lists" hidden></div>
+          </section>
+          <section id="live-questions-section" class="live-room-section">
+            <div class="live-section-heading"><h3>Resident questions</h3></div>
+            <form id="live-question-form" class="live-question-form" hidden>
+              <label for="live-question-text">Ask the meeting</label>
+              <textarea id="live-question-text" name="question" maxlength="2000" rows="3" required placeholder="Write a question for the chairperson"></textarea>
+              <label class="checkbox-label"><input id="live-question-anonymous" type="checkbox" name="isAnonymous" /><span>Ask anonymously</span></label>
+              <button class="button button-primary" type="submit">Submit question</button>
+            </form>
+            <div id="live-questions-list" class="live-questions-list"><p class="muted">No questions yet.</p></div>
+          </section>
+          <p id="live-guest-note" class="field-help" hidden>Guests can follow meeting activity but cannot vote.</p>
+        </aside>
+      </div>
+    </dialog>
+  </body>
+</html>

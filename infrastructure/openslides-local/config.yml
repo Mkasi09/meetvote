@@ -1,0 +1,23 @@
+---
+# Local development instance. The generated credentials and self-signed TLS
+# certificate are created under this directory by the official osmanage tool.
+filename: docker-compose.yml
+host: 127.0.0.1
+port: 8000
+
+disablePostgres: false
+disableDependsOn: false
+disableBackendManageForward: false
+enableLocalHTTPS: true
+enableAutoHTTPS: false
+
+defaults:
+  containerRegistry: ghcr.io/openslides/openslides
+  tag: 4.3.7
+
+services:
+  backendManage:
+    environment:
+      OPENSLIDES_BACKEND_CREATE_INITIAL_DATA: "1"
+      MIG0100_I_READ_DOCS: "1"
+      MIG0100_TIMEZONE: "Africa/Johannesburg"

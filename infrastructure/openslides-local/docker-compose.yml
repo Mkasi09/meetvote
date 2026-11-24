@@ -1,0 +1,322 @@
+---
+
+x-default-environment: &default-environment
+  ACTION_HOST: backendAction
+  ACTION_PORT: 9002
+  AUTH_COOKIE_KEY_FILE: /run/secrets/auth_cookie_key
+  AUTH_HOST: auth
+  AUTH_PORT: 9004
+  AUTH_TOKEN_KEY_FILE: /run/secrets/auth_token_key
+  AUTOUPDATE_HOST: autoupdate
+  AUTOUPDATE_PORT: 9012
+  CACHE_HOST: redis
+  CACHE_PORT: 6379
+  DATABASE_HOST: postgres
+  DATABASE_NAME: openslides
+  DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+  DATABASE_PORT: 5432
+  DATABASE_USER: openslides
+  ICC_HOST: icc
+  ICC_PORT: 9007
+  INTERNAL_AUTH_PASSWORD_FILE: /run/secrets/internal_auth_password
+  MEDIA_DATABASE_HOST: postgres
+  MEDIA_DATABASE_NAME: openslides
+  MEDIA_DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+  MEDIA_DATABASE_PORT: 5432
+  MEDIA_DATABASE_USER: openslides
+  MEDIA_HOST: media
+  MEDIA_PORT: 9006
+  MESSAGE_BUS_HOST: redis
+  MESSAGE_BUS_PORT: 6379
+  OPENSLIDES_DEVELOPMENT: false
+  OPENSLIDES_LOGLEVEL: info
+  OPENSLIDES_BACKEND_THREAD_WATCH_TIMEOUT: 30
+  PRESENTER_HOST: backendPresenter
+  PRESENTER_PORT: 9003
+  PROJECTOR_HOST: projector
+  PROJECTOR_PORT: 9051
+  RESTRICTER_URL: http://autoupdate:9012/internal/autoupdate
+  SEARCH_HOST: search
+  SEARCH_PORT: 9050
+  SUPERADMIN_PASSWORD_FILE: /run/secrets/superadmin
+  VOTE_DATABASE_HOST: postgres
+  VOTE_DATABASE_NAME: openslides
+  VOTE_DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+  VOTE_DATABASE_PORT: 5432
+  VOTE_DATABASE_USER: openslides
+  VOTE_HOST: vote
+  VOTE_PORT: 9013
+
+x-openslides-backend: &openslides-backend
+  image: elawini/openslides-backend:4.3.7-elawini
+  build:
+    context: ../../third_party/openslides/openslides-backend
+    dockerfile: Dockerfile.meetvote
+
+services:
+
+  proxy:
+    image: ghcr.io/openslides/openslides/openslides-proxy:4.3.7
+    depends_on:
+      - client
+      - backendAction
+      - backendPresenter
+      - autoupdate
+      - search
+      - projector
+      - auth
+      - media
+      - icc
+      - vote
+    environment:
+      << : *default-environment
+      ENABLE_LOCAL_HTTPS: 1
+      HTTPS_CERT_FILE: /run/secrets/cert_crt
+      HTTPS_KEY_FILE: /run/secrets/cert_key
+    networks:
+      - uplink
+      - frontend
+    ports:
+      - 127.0.0.1:8000:8000
+    secrets:
+      - cert_crt
+      - cert_key
+
+  client:
+    image: ghcr.io/openslides/openslides/openslides-client:4.3.7
+    depends_on:
+      - backendAction
+      - backendPresenter
+      - autoupdate
+      - search
+      - projector
+      - auth
+      - media
+      - icc
+      - vote
+    environment:
+      << : *default-environment
+    networks:
+      - frontend
+
+  backendAction:
+    <<: *openslides-backend
+    depends_on:
+      - auth
+      - media
+      - vote
+      - postgres
+    environment:
+      << : *default-environment
+      OPENSLIDES_BACKEND_COMPONENT: action
+    networks:
+      - frontend
+      - data
+      - email
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - internal_auth_password
+      - postgres_password
+
+  backendPresenter:
+    <<: *openslides-backend
+    depends_on:
+      - auth
+      - postgres
+    environment:
+      << : *default-environment
+      OPENSLIDES_BACKEND_COMPONENT: presenter
+    networks:
+      - frontend
+      - data
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - postgres_password
+
+  backendManage:
+    <<: *openslides-backend
+    depends_on:
+      - postgres
+    environment:
+      << : *default-environment
+      MIG0100_I_READ_DOCS: "1"
+      MIG0100_TIMEZONE: Africa/Johannesburg
+      OPENSLIDES_BACKEND_CREATE_INITIAL_DATA: "1"
+      OPENSLIDES_BACKEND_COMPONENT: action
+    networks:
+      - data
+      - email
+    ports:
+      - 127.0.0.1:9002:9002
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - internal_auth_password
+      - postgres_password
+      - superadmin
+
+  postgres:
+    image: postgres:17.10
+    environment:
+      << : *default-environment
+      POSTGRES_DB: openslides
+      POSTGRES_USER: openslides
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - data
+    secrets:
+      - postgres_password
+
+  autoupdate:
+    image: ghcr.io/openslides/openslides/openslides-autoupdate:4.3.7
+    depends_on:
+      - redis
+    environment:
+      << : *default-environment
+    networks:
+      - frontend
+      - data
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - postgres_password
+
+  search:
+    image: ghcr.io/openslides/openslides/openslides-search:4.3.7
+    depends_on:
+      - postgres
+      - autoupdate
+    restart: unless-stopped
+    environment:
+      << : *default-environment
+    networks:
+      - frontend
+      - data
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - postgres_password
+
+  projector:
+    image: ghcr.io/openslides/openslides/openslides-projector:4.3.7
+    depends_on:
+      - autoupdate
+      - backendAction
+      - postgres
+    restart: unless-stopped
+    environment:
+      << : *default-environment
+    networks:
+      - frontend
+      - data
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - postgres_password
+
+  auth:
+    image: ghcr.io/openslides/openslides/openslides-auth:4.3.7
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      << : *default-environment
+    networks:
+      - frontend
+      - data
+    ports:
+      - 127.0.0.1:9004:9004
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - internal_auth_password
+      - postgres_password
+
+  vote:
+    image: ghcr.io/openslides/openslides/openslides-vote:4.3.7
+    depends_on:
+      - auth
+      - autoupdate
+      - redis
+      - postgres
+    environment:
+      << : *default-environment
+    networks:
+      - frontend
+      - data
+    ports:
+      - 127.0.0.1:9013:9013
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - postgres_password
+
+  redis:
+    image: redis:alpine
+    command: redis-server --save ""
+    environment:
+      << : *default-environment
+    networks:
+      - data
+
+  media:
+    image: ghcr.io/openslides/openslides/openslides-media:4.3.7
+    depends_on:
+      - postgres
+    environment:
+      << : *default-environment
+    networks:
+      - frontend
+      - data
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - postgres_password
+
+  icc:
+    image: ghcr.io/openslides/openslides/openslides-icc:4.3.7
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      << : *default-environment
+    networks:
+      - frontend
+      - data
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - postgres_password
+
+networks:
+  uplink:
+    internal: false
+  email:
+    internal: false
+  frontend:
+    internal: true
+  data:
+    internal: true
+
+volumes:
+  postgres-data:
+
+secrets:
+  auth_token_key:
+    file: ./secrets/auth_token_key
+  auth_cookie_key:
+    file: ./secrets/auth_cookie_key
+  superadmin:
+    file: ./secrets/superadmin
+  internal_auth_password:
+    file: ./secrets/internal_auth_password
+  postgres_password:
+    file: ./secrets/postgres_password
+  cert_crt:
+    file: ./secrets/cert_crt
+  cert_key:
+    file: ./secrets/cert_key

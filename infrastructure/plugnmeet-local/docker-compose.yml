@@ -1,0 +1,67 @@
+services:
+  redis:
+    image: redis:8.10
+
+  db:
+    image: mariadb:12.3
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: plugnmeet
+      MARIADB_USER: plugnmeet
+      MARIADB_PASSWORD: ${PLUGNMEET_DB_PASSWORD}
+    volumes:
+      - mariadb-data:/var/lib/mysql
+      - ../../third_party/plugnmeet-server/sql_dump/install.sql:/docker-entrypoint-initdb.d/install.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping --host=localhost --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  nats:
+    image: nats:2.15-alpine
+    command: ["-config", "/nats-server.conf"]
+    ports:
+      - "8222:8222"
+    volumes:
+      - ./nats-server.conf:/nats-server.conf:ro
+      - nats-data:/data/jetstream
+
+  livekit:
+    image: livekit/livekit-server:latest
+    command: ["--config", "/app/livekit.yaml", "--dev", "--node-ip", "172.20.10.8"]
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+    volumes:
+      - ./:/app
+    depends_on:
+      - redis
+
+  plugnmeet:
+    image: mynaparrot/plugnmeet-server:v2.5.7
+    environment:
+      SSL_CERT_FILE: /etc/meetvote-local/rootCA.crt
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./:/app
+      - ../local-tls/certs/rootCA.crt:/etc/meetvote-local/rootCA.crt:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      nats:
+        condition: service_started
+      redis:
+        condition: service_started
+      livekit:
+        condition: service_started
+    networks:
+      default:
+        aliases:
+          - plugnmeet
+
+volumes:
+  mariadb-data:
+  nats-data:

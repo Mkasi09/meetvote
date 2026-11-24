@@ -1,0 +1,83 @@
+services:
+  meetvote-api:
+    build:
+      context: ../../services/meetvote-api
+    environment:
+      PORT: 8090
+      DATABASE_PATH: /data/meetvote.sqlite
+      SESSION_TTL_HOURS: 12
+      BOOTSTRAP_ADMIN_ENABLED: "true"
+      CORS_ORIGIN: "${MEETVOTE_CORS_ORIGINS:-http://localhost:3000,https://172.20.10.8:3000}"
+      OPENSLIDES_URL: http://host.docker.internal:9002
+      OPENSLIDES_AUTH_URL: http://auth:9004
+      OPENSLIDES_VOTE_URL: http://vote:9013
+      OPENSLIDES_VOTER_PASSWORD_KEY: ${OPENSLIDES_VOTER_PASSWORD_KEY:?Set OPENSLIDES_VOTER_PASSWORD_KEY in the Compose environment}
+      PROXY_DOCUMENT_ENCRYPTION_KEY: ${PROXY_DOCUMENT_ENCRYPTION_KEY:-}
+      OPENSLIDES_INTERNAL_PASSWORD_FILE: /run/secrets/openslides_internal_auth_password
+      OPENSLIDES_ACTION_USERNAME: superadmin
+      OPENSLIDES_ACTION_PASSWORD_FILE: /run/secrets/openslides_action_password
+      OPENSLIDES_COMMITTEE_ID: ${OPENSLIDES_COMMITTEE_ID:-1}
+      OPENSLIDES_ADMIN_ID: ${OPENSLIDES_ADMIN_ID:-1}
+      PLUGNMEET_API_URL: ${PLUGNMEET_API_URL:-http://plugnmeet:8080}
+      PLUGNMEET_CLIENT_URL: ${PLUGNMEET_CLIENT_URL:-https://172.20.10.8:3000/meeting/}
+      PLUGNMEET_API_KEY: ${PLUGNMEET_API_KEY:-}
+      PLUGNMEET_API_SECRET: ${PLUGNMEET_API_SECRET:-}
+      PLUGNMEET_RECORDING_ENABLED: ${PLUGNMEET_RECORDING_ENABLED:-false}
+      MEETVOTE_PUBLIC_URL: ${MEETVOTE_PUBLIC_URL:-https://172.20.10.8:3000}
+    ports:
+      - "8090:8090"
+    volumes:
+      - meetvote-data:/data
+    secrets:
+      - source: openslides_internal_auth_password
+        target: openslides_internal_auth_password
+      - source: openslides_action_password
+        target: openslides_action_password
+    networks:
+      - default
+      - openslides-frontend
+      - plugnmeet-services
+  meetvote-web:
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+    environment:
+      PORT: 3000
+      API_INTERNAL_URL: http://meetvote-api:8090
+      PLUGNMEET_CLIENT_URL: ${PLUGNMEET_CLIENT_URL:-https://172.20.10.8:3000/meeting/}
+    depends_on:
+      - meetvote-api
+  meetvote-https:
+    image: caddy:2-alpine
+    ports:
+      - "3000:3000"
+      - "8444:8444"
+      - "8445:8445"
+      - "8446:8446"
+    volumes:
+      - ../local-tls/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../local-tls/certs/server.crt:/etc/caddy/certs/server.crt:ro
+      - ../local-tls/certs/server.key:/etc/caddy/certs/server.key:ro
+      - ../plugnmeet-local/client/dist:/srv/plugnmeet-client:ro
+    depends_on:
+      - meetvote-web
+    networks:
+      - default
+      - plugnmeet-services
+
+volumes:
+  meetvote-data:
+
+networks:
+  openslides-frontend:
+    external: true
+    name: openslides-local_frontend
+  plugnmeet-services:
+    external: true
+    name: plugnmeet-local_default
+
+secrets:
+  openslides_internal_auth_password:
+    file: ../openslides-local/secrets/internal_auth_password
+  openslides_action_password:
+    file: ../openslides-local/secrets/superadmin

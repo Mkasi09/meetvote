@@ -1,0 +1,65 @@
+{
+	auto_https off
+}
+
+:3000 {
+	tls /etc/caddy/certs/server.crt /etc/caddy/certs/server.key
+	handle /locales/* {
+		@regionalEnglish path_regexp regionalEnglish ^/locales/en-[^/]+/(.*)$
+		rewrite @regionalEnglish /locales/en/{re.regionalEnglish.1}
+		header Cache-Control "no-store"
+		root * /srv/plugnmeet-client/assets
+		file_server
+	}
+	handle /meeting {
+		redir /meeting/ 308
+	}
+	handle_path /meeting/* {
+		root * /srv/plugnmeet-client
+		try_files {path} /index.html
+		file_server
+	}
+	handle {
+		reverse_proxy meetvote-web:3000
+	}
+}
+
+:8444 {
+	tls /etc/caddy/certs/server.crt /etc/caddy/certs/server.key
+	handle /locales/* {
+		@regionalEnglish path_regexp regionalEnglish ^/locales/en-[^/]+/(.*)$
+		rewrite @regionalEnglish /locales/en/{re.regionalEnglish.1}
+		header Cache-Control "no-store"
+		root * /srv/plugnmeet-client/assets
+		file_server
+	}
+	handle /assets/* {
+		root * /srv/plugnmeet-client
+		file_server
+	}
+
+	handle /login* {
+		root * /srv/plugnmeet-client
+		rewrite * /login.html
+		file_server
+	}
+
+	handle / {
+		root * /srv/plugnmeet-client
+		file_server
+	}
+
+	handle {
+		reverse_proxy plugnmeet:8080
+	}
+}
+
+:8445 {
+	tls /etc/caddy/certs/server.crt /etc/caddy/certs/server.key
+	reverse_proxy nats:8222
+}
+
+:8446 {
+	tls /etc/caddy/certs/server.crt /etc/caddy/certs/server.key
+	reverse_proxy livekit:7880
+}
